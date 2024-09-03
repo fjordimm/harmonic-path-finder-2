@@ -1,0 +1,1 @@
+@del .\HarmonicPathFinder2.exe

@@ -4,11 +4,24 @@
 ///// Includes /////
 
 #include <cstdio>
+#include <string>
 #include <vector>
+#include <map>
 
 ////////////////////////////////////////////////////////////////
 
 ///// Constants /////
+
+/* Chord Types */
+
+enum Chord
+{
+	Chd_Major,
+	Chd_MajorDom,
+	Chd_Minor,
+	Chd_HalfDim
+};
+inline std::string const&
 
 /* Intervals */
 
@@ -29,93 +42,9 @@ enum : int
 	Itv_8
 };
 
-/* Chords */
+/* Scales */
 
-static const std::vector<int> Chd_major
-{
-	Itv_1,
-	Itv_3,
-	Itv_5
-};
-
-/* Modes */
-
-static const std::vector<int> Scl_ionian
-{
-	Itv_1,
-	Itv_2,
-	Itv_3,
-	Itv_4,
-	Itv_5,
-	Itv_6,
-	Itv_7
-};
-
-static const std::vector<int> Scl_dorian
-{
-	Itv_1,
-	Itv_2,
-	Itv_b3,
-	Itv_4,
-	Itv_5,
-	Itv_6,
-	Itv_b7
-};
-
-static const std::vector<int> Scl_phrygian
-{
-	Itv_1,
-	Itv_b2,
-	Itv_b3,
-	Itv_4,
-	Itv_5,
-	Itv_b6,
-	Itv_b7
-};
-
-static const std::vector<int> Scl_lydian
-{
-	Itv_1,
-	Itv_2,
-	Itv_3,
-	Itv_b5,
-	Itv_5,
-	Itv_6,
-	Itv_7
-};
-
-static const std::vector<int> Scl_mixolydian
-{
-	Itv_1,
-	Itv_2,
-	Itv_3,
-	Itv_4,
-	Itv_5,
-	Itv_6,
-	Itv_b7
-};
-
-static const std::vector<int> Scl_aeolian
-{
-	Itv_1,
-	Itv_2,
-	Itv_b3,
-	Itv_4,
-	Itv_5,
-	Itv_b6,
-	Itv_b7
-};
-
-static const std::vector<int> Scl_locrian
-{
-	Itv_1,
-	Itv_b2,
-	Itv_b3,
-	Itv_4,
-	Itv_b5,
-	Itv_b6,
-	Itv_b7
-};
+// static const std::map<int, >
 
 ////////////////////////////////////////////////////////////////
 
@@ -123,10 +52,7 @@ static const std::vector<int> Scl_locrian
 
 int main(void)
 {
-	for (int i = 0; i < Chd_major.size(); i++)
-	{
-		std::printf("%i\n", Chd_major[i]);
-	}
+	std::printf("uhhh %i\n", Chd_MajorDom);
 
 	return 0;
 }

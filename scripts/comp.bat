@@ -1,0 +1,1 @@
+@g++ -o HarmonicPathFinder2 -Wall -pedantic .\HarmonicPathFinder2.cpp
