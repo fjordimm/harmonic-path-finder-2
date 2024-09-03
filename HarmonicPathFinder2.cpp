@@ -8,6 +8,7 @@
 #include <vector>
 #include <tuple>
 #include <array>
+#include <memory>
 
 ////////////////////////////////////////////////////////////////
 
@@ -155,38 +156,35 @@ inline std::string const& Str(Interval the)
 
 /* Scales */
 
-static const std::vector<std::tuple<Interval, ChordType>> Scl_Ionian
-{
-	std::make_tuple(Itv_1, Chd_Major),
-	std::make_tuple(Itv_2, Chd_Minor),
-	std::make_tuple(Itv_3, Chd_Minor),
-	std::make_tuple(Itv_4, Chd_Major),
-	std::make_tuple(Itv_5, Chd_MajorDom),
-	std::make_tuple(Itv_6, Chd_Minor),
-	std::make_tuple(Itv_7, Chd_HalfDim)
-};
+typedef std::vector<std::tuple<Interval, ChordType>> Scl_t;
 
-static const std::vector<std::tuple<Interval, ChordType>> Scl_Dorian
-{
-	std::make_tuple(Itv_1, Chd_Minor),
-	std::make_tuple(Itv_2, Chd_Minor),
-	std::make_tuple(Itv_b3, Chd_Major),
-	std::make_tuple(Itv_4, Chd_MajorDom),
-	std::make_tuple(Itv_5, Chd_Minor),
-	std::make_tuple(Itv_6, Chd_HalfDim),
-	std::make_tuple(Itv_b7, Chd_Major)
-};
+static std::unique_ptr<Scl_t const> const Scl_Ionian = std::make_unique<Scl_t const>
+(
+	Scl_t
+	{
+		std::make_tuple(Itv_1, Chd_Major),
+		std::make_tuple(Itv_2, Chd_Minor),
+		std::make_tuple(Itv_3, Chd_Minor),
+		std::make_tuple(Itv_4, Chd_Major),
+		std::make_tuple(Itv_5, Chd_MajorDom),
+		std::make_tuple(Itv_6, Chd_Minor),
+		std::make_tuple(Itv_7, Chd_HalfDim)
+	}
+);
 
-static const std::vector<std::tuple<Interval, ChordType>> Scl_Phrygian
-{
-	std::make_tuple(Itv_1, Chd_Minor),
-	std::make_tuple(Itv_b2, Chd_Major),
-	std::make_tuple(Itv_b3, Chd_MajorDom),
-	std::make_tuple(Itv_4, Chd_Minor),
-	std::make_tuple(Itv_5, Chd_HalfDim),
-	std::make_tuple(Itv_b6, Chd_Major),
-	std::make_tuple(Itv_b7, Chd_Minor)
-};
+static std::unique_ptr<Scl_t const> const Scl_Dorian = std::make_unique<Scl_t const>
+(
+	Scl_t
+	{
+		std::make_tuple(Itv_1, Chd_Minor),
+		std::make_tuple(Itv_2, Chd_Minor),
+		std::make_tuple(Itv_b3, Chd_Major),
+		std::make_tuple(Itv_4, Chd_MajorDom),
+		std::make_tuple(Itv_5, Chd_Minor),
+		std::make_tuple(Itv_6, Chd_HalfDim),
+		std::make_tuple(Itv_b7, Chd_Major)
+	}
+);
 
 ////////////////////////////////////////////////////////////////
 
@@ -197,7 +195,7 @@ typedef std::array<std::array<std::vector<std::string>, 4>, 12> pathsFound_t;
 /* Forward Declarations */
 
 void addChordsFrom(int maxRecursion, pathsFound_t& pathsFound, Interval newRoot);
-void addChordsFrom_h(int maxRecursion, pathsFound_t& pathsFound, std::string pathStr, Interval newRoot);
+void addChordsFrom_h(int recursionLevel, pathsFound_t& pathsFound, Scl_t const* scale, Interval newRoot, std::string pathStr);
 
 /* Main */
 
@@ -205,7 +203,7 @@ int main(void)
 {
 	pathsFound_t pathsFound;
 
-	addChordsFrom(2, pathsFound, Itv_1);
+	addChordsFrom(3, pathsFound, Itv_1);
 
 	for (size_t i = 0; i < pathsFound.size(); i++)
 	{
@@ -217,7 +215,7 @@ int main(void)
 
 			for (size_t k = 0; k < pathsFound[i][j].size(); k++)
 			{
-				std::cout << "    * " << pathsFound[i][j][k] << "\n";
+				std::cout << "    " << pathsFound[i][j][k] << "\n";
 			}
 		}
 	}
@@ -229,27 +227,41 @@ int main(void)
 
 void addChordsFrom(int maxRecursion, pathsFound_t& pathsFound, Interval newRoot)
 {
-	addChordsFrom_h(maxRecursion, pathsFound, "", newRoot);
+	addChordsFrom_h(maxRecursion, pathsFound, Scl_Ionian.get(), newRoot, "");
+	addChordsFrom_h(1, pathsFound, Scl_Dorian.get(), newRoot, "");
 }
 
-void addChordsFrom_h(int maxRecursion, pathsFound_t& pathsFound, std::string pathStr, Interval newRoot)
+void addChordsFrom_h(int recursionLevel, pathsFound_t& pathsFound, Scl_t const* scale, Interval newRoot, std::string pathStr)
 {
-	if (maxRecursion <= 0)
-	{ return; }
+	if (recursionLevel <= 0)
+	{ std::fprintf(stderr, "THIS SHOULD NOT HAPPEN\n"); }
 
-	for (size_t i = 0; i < Scl_Ionian.size(); i++)
+	for (size_t i = 1; i < scale->size(); i++)
 	{
-		Interval interval = std::get<0>(Scl_Ionian[i]);
+		Interval interval = std::get<0>(scale->at(i));
 		Interval actualNote = (newRoot + interval) % 12;
-		ChordType chordType = std::get<1>(Scl_Ionian[i]);
+		ChordType chordType = std::get<1>(scale->at(i));
 
-		std::string newPathStr = pathStr;
-		if (pathStr.size() > 0)
-		{ newPathStr += "-"; }
-		newPathStr += Str(interval);
+		std::string newPathStr;
+		{
+			newPathStr += pathStr;
+
+			if (pathStr.size() > 0)
+			{ newPathStr += "-"; }
+
+			if (scale == Scl_Dorian.get())
+			{ newPathStr += "(dor)"; }
+
+			newPathStr += Str(interval);
+		}
 
 		pathsFound[actualNote][chordType].push_back(newPathStr);
-		addChordsFrom_h(maxRecursion - 1, pathsFound, newPathStr, actualNote);
+
+		if (recursionLevel > 1)
+		{
+			addChordsFrom_h(recursionLevel - 1, pathsFound, Scl_Ionian.get(), actualNote, newPathStr);
+			addChordsFrom_h(1, pathsFound, Scl_Dorian.get(), actualNote, newPathStr);
+		}
 	}
 }
 
